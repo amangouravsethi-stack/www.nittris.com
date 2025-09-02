@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NITRis Multi-Page Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; }
+    .container { display: flex; height: 100vh; justify-content: center; align-items: center; }
+    .login-box {
+      background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 16px #ccc; width: 350px;
+    }
+    .logo { font-size: 2em; font-weight: 700; margin-bottom: 20px; }
+    .input-group { margin-bottom: 18px; }
+    input {
+      width: 100%; padding: 11px; font-size: 1em; border: 1px solid #ddd; border-radius: 5px;
+    }
+    .button {
+      background: #bf402b; color: #fff; font-size: 1.1em; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer;
+    }
+    .hidden { display: none; }
+    .main-content {
+      width: 100vw; height: 100vh; background: #f9fbfc; display: flex; flex-direction: row;
+    }
+    .sidebar {
+      background: #3d4251; width: 260px; color: #fff; padding: 20px 15px 0 15px; box-sizing: border-box;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .sidebar .calendar {
+      margin-bottom: 24px; width: 100%;
+    }
+    .sidebar .calendar table {
+      border-collapse: collapse; width: 100%;
+      color: white;
+    }
+    .sidebar .calendar th, .sidebar .calendar td {
+      text-align: center; padding: 5px 0; border: none;
+    }
+    .sidebar .calendar th {
+      font-weight: normal;
+      font-size: 0.9em;
+    }
+    .sidebar .month-title {
+      font-size: 1.3em; font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; text-align: center;
+    }
+    .sidebar .dates td {
+      background: #e7eef6; color: #25408f; border-radius: 3px; margin: 2px;
+    }
+    .sidebar .dates .highlight-red {
+      background: #bf402b; color: white; font-weight: 700; border-radius: 3px;
+    }
+    .sidebar .dates .highlight-blue {
+      background: #25408f; color: white; font-weight: 700; border-radius: 3px;
+    }
+    .sidebar .options {
+      margin-top: auto; width: 100%;
+    }
+    .sidebar button.option-btn {
+      width: 100%; margin-bottom: 12px; padding: 10px 0; font-size: 1em;
+      border: none; border-radius: 6px; cursor: pointer;
+      background: #264377; color: white;
+      transition: background-color 0.3s ease;
+    }
+    .sidebar button.option-btn:hover {
+      background-color: #1b2a54;
+    }
+    .content-area {
+      flex-grow: 1; padding: 25px 40px; overflow-y: auto;
+      box-sizing: border-box;
+    }
+    /* Timetable card */
+    .timetable-card {
+      background: white; padding: 20px; border-radius: 10px;
+      box-shadow: 0 4px 16px #ddd; margin-bottom: 20px;
+    }
+    .timetable-title {
+      font-size: 1.15em; font-weight: 500; margin-bottom: 10px;
+    }
+    table {
+      border-collapse: collapse; width: 100%;
+    }
+    th, td {
+      border: 1px solid #567; padding: 8px; text-align: center;
+      font-size: 0.9em;
+    }
+    th {
+      background: #25408f; color: #fff;
+    }
+    .dates-card {
+      background: #e7eef6; padding: 20px; border-radius: 10px; color: #25408f; font-size: 0.95em;
+      overflow-wrap: break-word;
+    }
+    .dates-card .event-th, .dates-card .event-td {
+      background: #e7eef6; border: 1px solid #cad3e7; color: #25408f; padding: 7px;
+      text-align: left;
+    }
+    /* Profile and Fee Payment styles */
+    .profile-container, .fee-container {
+      background: white; padding: 20px 35px; border-radius: 10px; box-shadow: 0 4px 16px #ddd; max-width: 900px;
+    }
+    .profile-title, .fee-title {
+      font-size: 1.5em; font-weight: 600; margin-bottom: 20px; color: #333;
+    }
+    .profile-info {
+      display: flex; gap: 30px;
+    }
+    .profile-info img {
+      border-radius: 6px; width: 160px; height: auto; object-fit: cover; box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    }
+    .profile-details p {
+      margin: 5px 0; color: #444; font-size: 1.05em;
+      line-height: 1.3;
+    }
+    /* Fee Payment table override */
+    .fee-container table {
+      font-size: 0.85em;
+      width: 100%;
+    }
+    .fee-container th, .fee-container td {
+      padding: 8px; border-radius: 5px;
+    }
+    .fee-container th {
+      background-color: #25408f; color: #fff;
+    }
+    .fee-container td {
+      background: #fff;
+      border: 1px solid #85a1d4;
+      color: #124066;
+    }
+    .fee-status-success {
+      color: #218838; font-weight: 600;
+    }
+    .fee-status-pending {
+      color: #bd2130; font-weight: 600;
+    }
+    .fee-buttons button {
+      margin-left: 6px; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;
+      font-size: 0.85em;
+    }
+    .btn-fee-breakup {
+      background-color: #007bff; color: white;
+    }
+    .btn-pay-now {
+      background-color: #dc3545; color: white;
+    }
+    .btn-receipt {
+      background-color: #28a745; color: white;
+    }
+    /* Scroll container */
+    .scrollable {
+      max-height: 75vh; overflow-y: auto; padding-right: 10px;
+    }
+  </style>
+</head>
+<body>
+<!-- Login Page -->
+<div class="container" id="loginPage">
+  <div class="login-box">
+    <div class="logo">
+      <img src="https://i.imgur.com/lDZJilc.png" alt="NITRis" height="34" style="vertical-align:middle;" />
+      NITRis
+    </div>
+    <div style="margin-bottom:14px;">Sign In to NITRIS</div>
+    <div class="input-group">
+      <input type="text" id="userID" placeholder="User Name" autocomplete="off" />
+    </div>
+    <div class="input-group">
+      <input type="password" id="userPW" placeholder="Password" autocomplete="off" />
+    </div>
+    <button class="button" onclick="showMain()">Log In</button>
+  </div>
+</div>
+<!-- Main Content Area -->
+<div class="main-content hidden" id="mainScreen">
+  <div class="sidebar">
+    <div class="calendar">
+      <div class="month-title">September 2025</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th>Sat</th>
+            <th>Sun</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#297d38">25</td><td style="color:#297d38">26</td><td style="color:#bf402b">27</td><td style="color:#bf402b">28</td><td style="color:#eac600">29</td><td style="color:#bf402b">30</td><td style="color:#bf402b">31</td>
+          </tr>
+          <tr>
+            <td style="background:#25408f;color:#fff;">1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td>
+          </tr>
+          <tr>
+            <td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td>
+          </tr>
+          <tr>
+            <td>15</td><td style="color:#bf402b">16</td><td style="color:#bf402b">17</td><td>18</td><td>19</td><td>20</td><td>21</td>
+          </tr>
+          <tr>
+            <td>22</td><td>23</td><td>24</td><td>25</td><td style="color:#bf402b">26</td><td style="color:#bf402b">27</td><td style="color:#bf402b">28</td>
+          </tr>
+          <tr><td style="color:#bf402b">29</td><td style="background:#25408f;color:#fff;">30</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="options">
+      <button class="option-btn" onclick="showMainScreen()">Main Screen</button>
+      <button class="option-btn" onclick="showProfile()">My Profile</button>
+      <button class="option-btn" onclick="showFee()">Fee Payment</button>
+    </div>
+  </div>
+
+  <!-- Main Screen -->
+  <div class="content-area" id="contentMainScreen">
+    <div class="timetable-card">
+      <div class="timetable-title">Registered Courses [ 2025-26 / Autumn ]</div>
+      <div style="background:#e3ebf5;padding:10px;margin-bottom:20px;border-radius:5px;">No Records Found.....</div>
+      <div class="timetable-title">Course Class Time Table and Room#</div>
+      <table>
+        <thead>
+          <tr>
+            <th>PERIOD<br>DAY</th>
+            <th>08:00 hr<br/>08:55 hr</th>
+            <th>09:00 hr<br/>09:55 hr</th>
+            <th>10:00 hr<br/>10:55 hr</th>
+            <th>11:05 hr<br/>12:00 hr</th>
+            <th>12:00 hr<br/>13:15 hr</th>
+            <th>13:15 hr<br/>14:10 hr</th>
+            <th>14:15 hr<br/>15:10 hr</th>
+            <th>15:15 hr<br/>16:10 hr</th>
+            <th>16:20 hr<br/>17:15 hr</th>
+            <th>17:20 hr<br/>18:15 hr</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>MONDAY</td><td>-</td><td>-</td><td>-</td><td>-</td><td>L</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+          </tr>
+          <tr>
+            <td>TUESDAY</td><td>-</td><td>-</td><td>-</td><td>-</td><td>U</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+          </tr>
+          <tr>
+            <td>WEDNESDAY</td><td>-</td><td>-</td><td>MM4109</td><td>-</td><td>N</td><td>-</td><td>MM3523</td><td>MM3523</td><td>MM3523</td><td>-</td>
+          </tr>
+          <tr>
+            <td>THURSDAY</td><td>-</td><td>-</td><td>MM4109</td><td>-</td><td>C</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+          </tr>
+          <tr>
+            <td>FRIDAY</td><td>-</td><td>-</td><td>MM4109</td><td>-</td><td>H</td><td>-</td><td>MM2307</td><td>MM2307</td><td>MM2307</td><td>-</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="dates-card">
+        <div style="font-weight: 600; font-size: 1.1em; margin-bottom: 10px;">Important Dates</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:left;">Event</th>
+              <th>Last Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Amend Final Registration (2025-26/Autumn)</td>
+              <td>Sept 04, 2025</td>
+            </tr>
+            <tr>
+              <td>Final Registration (2025-26/Autumn)</td>
+              <td>Sept 9, 2025</td>
+            </tr>
+            <tr>
+              <td>De-Registration (2025-26/Autumn)</td>
+              <td>Aug 31, 2025</td>
+            </tr>
+            <tr>
+              <td>Guided-Self Study Registration (2025/Summer)</td>
+              <td>Jul 08, 2025</td>
+            </tr>
+            <tr>
+              <td>Pre-Registration (2025-26/Autumn)</td>
+              <td>Jul 20, 2025</td>
+            </tr>
+            <tr>
+              <td>Amend Final Registration(Research) (2025-26/Autumn)</td>
+              <td>Jul 31, 2025</td>
+            </tr>
+            <tr>
+              <td>Apply Mark Change (Student) (2025-26/Autumn)</td>
+              <td>Sep 05, 2025</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-weight: 600; font-size: 1em; margin-top: 12px;">Mon 1 Sep 2025<br/>10 : 45 : 30</div>
+        <div style="position:absolute;top:23px;right:27px;">
+          <img src="https://i.imgur.com/BQH2xH1.png" height="45" alt="Profile" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Page -->
+  <div class="content-area hidden" id="contentProfile">
+    <div class="profile-container">
+      <div class="profile-title">My Profile</div>
+      <div class="profile-info">
+        <img src="https://i.imgur.com/A8C7uED.jpg" alt="Profile Picture" />
+        <div class="profile-details">
+          <p>AMAN GOURAV SETHI (719MM1041)</p>
+          <p>MM : Metallurgical and Materials Engineering</p>
+          <p>B.Tech. M.Tech Dual Degree</p>
+          <p>Metallurgical and Materials Engineering</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fee Payment Page -->
+  <div class="content-area hidden" id="contentFee">
+    <div class="fee-container scrollable">
+      <div class="fee-title">Fee Payment Details</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Demand Category</th>
+            <th>Fee Type</th>
+            <th>Payment Status</th>
+            <th>Demand Date</th>
+            <th>Due Date</th>
+            <th>Demand Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Semester Fee Autumn 2025-26</td>
+            <td>SemesterFee</td>
+            <td style="color:#bd2130; font-weight:bold;">Not Paid</td>
+            <td>14 Jul 2025</td>
+            <td style="color:#bd2130; font-weight:bold;">09 Sept 2025</td>
+            <td>₹ 15000.00</td>
+            <td>
+              <button class="btn-fee-breakup">Fee Breakup</button>
+              <button class="btn-pay-now">Pay Now</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Hostel Fee Autumn 2025-26</td>
+            <td>HostelFee</td>
+            <td style="color:#bd2130; font-weight:bold;">Not Paid</td>
+            <td>14 Jul 2025</td>
+            <td style="color:#bd2130; font-weight:bold;">09 Sept 2025</td>
+            <td>₹ 33515.00</td>
+            <td>
+              <button class="btn-fee-breakup">Fee Breakup</button>
+              <button class="btn-pay-now">Pay Now</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Hostel Fee Spring 2024-25</td>
+            <td>HostelFee</td>
+            <td style="color:#218838; font-weight:bold;">Success</td>
+            <td>10 Dec 2024</td>
+            <td>05 Jan 2025</td>
+            <td>₹ 28564.00</td>
+            <td>
+              <button class="btn-fee-breakup">Fee Breakup</button>
+              <button class="btn-receipt">Payment Receipt</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Semester Fee Spring 2024-25</td>
+            <td>SemesterFee</td>
+            <td style="color:#218838; font-weight:bold;">Success</td>
+            <td>10 Dec 2024</td>
+            <td>05 Jan 2025</td>
+            <td>₹ 14500.00</td>
+            <td>
+              <button class="btn-fee-breakup">Fee Breakup</button>
+              <button class="btn-receipt">Payment Receipt</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Semester Fee Autumn 2024-25</td>
+            <td>SemesterFee</td>
+            <td style="color:#218838; font-weight:bold;">Success</td>
+            <td>19 Jul 2024</td>
+            <td>31 Aug 2024</td>
+            <td>₹ 59000.00</td>
+            <td>
+              <button class="btn-fee-breakup">Fee Breakup</button>
+              <button class="btn-receipt">Payment Receipt</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Semester Fee Spring 2023-24</td>
+            <td>SemesterFee</td>
+            <td style="color:#218838; font-weight:bold;">Success</td>
+            <td>14 Mar 2024</td>
+            <td>16 Apr 2024</td>
+            <td>₹ 53342.00</td>
+            <td>
+              <button class="btn-fee-breakup">Fee Breakup</button>
+              <button class="btn-receipt">Payment Receipt</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  function showMain() {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainScreen').classList.remove('hidden');
+    showMainScreen();
+  }
+  function showMainScreen() {
+    document.getElementById('contentMainScreen').classList.remove('hidden');
+    document.getElementById('contentProfile').classList.add('hidden');
+    document.getElementById('contentFee').classList.add('hidden');
+  }
+  function showProfile() {
+    document.getElementById('contentMainScreen').classList.add('hidden');
+    document.getElementById('contentProfile').classList.remove('hidden');
+    document.getElementById('contentFee').classList.add('hidden');
+  }
+  function showFee() {
+    document.getElementById('contentMainScreen').classList.add('hidden');
+    document.getElementById('contentProfile').classList.add('hidden');
+    document.getElementById('contentFee').classList.remove('hidden');
+  }
+</script>
+</body>
+</html>
